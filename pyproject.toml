@@ -34,6 +34,7 @@ dev = [
   "pytest-cov>=7,<8",
   "ruff>=0.12,<1",
   "types-jsonschema>=4.25,<5",
+  "types-regex>=2026.1.0.20260423,<2027",
 ]
 
 [project.scripts]
@@ -74,8 +75,3 @@ files = ["src/promptbench_studio"]
 [[tool.mypy.overrides]]
 module = ["plotly", "plotly.*"]
 ignore_missing_imports = true
-
-[dependency-groups]
-dev = [
-    "types-regex>=2026.1.0.20260423,<2027",
-]

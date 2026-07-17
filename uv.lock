@@ -1462,10 +1462,6 @@ dev = [
     { name = "pytest-cov" },
     { name = "ruff" },
     { name = "types-jsonschema" },
-]
-
-[package.dev-dependencies]
-dev = [
     { name = "types-regex" },
 ]
 
@@ -1490,11 +1486,9 @@ requires-dist = [
     { name = "streamlit", specifier = ">=1.59,<2" },
     { name = "tenacity", specifier = ">=9.1,<10" },
     { name = "types-jsonschema", marker = "extra == 'dev'", specifier = ">=4.25,<5" },
+    { name = "types-regex", marker = "extra == 'dev'", specifier = ">=2026.1.0.20260423,<2027" },
 ]
 provides-extras = ["dev"]
-
-[package.metadata.requires-dev]
-dev = [{ name = "types-regex", specifier = ">=2026.1.0.20260423,<2027" }]
 
 [[package]]
 name = "propcache"
