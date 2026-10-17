@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Parallel prompt benchmarks across models through LiteLLM, including key-free Demo models.
 - Metrics: latency, time to first token, token usage (with a labelled character-based fallback) and estimated cost. Cost stays unavailable when pricing is unknown, rather than showing zero.
-- Evaluations: required/forbidden phrases, regex with a per-pattern timeout, word limits, JSON Schema, manual scoring and an optional LLM-as-a-Judge.
+- Evaluations: required/forbidden phrases, regex with a per-pattern timeout, word limits, JSON Schema and an optional LLM-as-a-Judge.
 - SQLite run history and a Streamlit comparison UI.
 - JSON, CSV and Markdown exports, hardened against spreadsheet formula and Markdown fence injection.
 - Security defaults: prompt logging off, custom provider URLs blocked from local and private networks, and secrets redacted from provider errors.
