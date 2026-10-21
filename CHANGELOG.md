@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Added UI regression tests for History search, empty states, and reopening saved comparisons without retaining another run's evaluations.
+
 ## [0.1.0] - 2026-10-17
 
 ### Added
