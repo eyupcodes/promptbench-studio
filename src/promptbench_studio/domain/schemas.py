@@ -6,6 +6,7 @@ from enum import StrEnum
 from typing import Any
 from uuid import UUID, uuid4
 
+import regex
 from jsonschema import SchemaError, validators
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -56,12 +57,11 @@ class EvaluationConfig(FrozenModel):
     @field_validator("regex_patterns")
     @classmethod
     def validate_regex_patterns(cls, value: tuple[str, ...]) -> tuple[str, ...]:
-        import re
-
+        # Validate with the engine that evaluates the patterns.
         for pattern in value:
             try:
-                re.compile(pattern)
-            except re.error as error:
+                regex.compile(pattern)
+            except regex.error as error:
                 raise ValueError(f"Invalid regular expression: {pattern}") from error
         return value
 
