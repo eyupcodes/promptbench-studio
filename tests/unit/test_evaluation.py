@@ -27,6 +27,14 @@ def test_rule_evaluation_scores_each_criterion() -> None:
     assert all(result.score == 1 for result in results)
 
 
+def test_regex_unicode_properties_are_accepted_and_evaluated() -> None:
+    config = EvaluationConfig(regex_patterns=(r"^\p{L}+$",))
+
+    results = evaluate_rules(uuid4(), "İstanbul", config)
+
+    assert [result.score for result in results] == [1.0]
+
+
 def test_regex_evaluation_times_out_catastrophic_backtracking() -> None:
     config = EvaluationConfig(regex_patterns=(r"(a+)+$",))
     started = time.perf_counter()
