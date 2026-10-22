@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Regex patterns are validated with the same `regex` engine that evaluates them, so Unicode properties such as `\p{L}` are accepted instead of rejected as invalid (#11).
 
+### Changed
+- Added UI regression tests for History search, empty states, and reopening saved comparisons without retaining another run's evaluations.
+
 ## [0.1.0] - 2026-10-17
 
 ### Added
