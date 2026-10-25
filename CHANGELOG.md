@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Regex patterns are validated with the same `regex` engine that evaluates them, so Unicode properties such as `\p{L}` are accepted instead of rejected as invalid (#11).
 
 ### Changed
+- Added UI regression tests for Comparison responses, missing costs, evaluation averages, and model recommendations, including failed runs and unavailable scores.
 - Added UI regression tests for New Benchmark form validation and submission, protecting model selection, parameter mapping, and evaluation criteria from regressions.
 - Added UI regression tests for History search, empty states, and reopening saved comparisons without retaining another run's evaluations.
 
