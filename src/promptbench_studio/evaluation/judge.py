@@ -28,19 +28,34 @@ def _value(source: Any, name: str, default: Any = None) -> Any:
     return getattr(source, name, default)
 
 
+def _embedded_payload(text: str) -> JudgePayload | None:
+    """First JSON object inside prose that is a valid judge payload."""
+    decoder = json.JSONDecoder()
+    for start in (m.start() for m in re.finditer(r"\{", text)):
+        try:
+            value, _ = decoder.raw_decode(text, start)
+            return JudgePayload.model_validate(value)
+        except (json.JSONDecodeError, ValidationError):
+            continue
+    return None
+
+
 def parse_judge_output(run_id: UUID, text: str, criterion: str) -> EvaluationResult:
     match = FENCE_PATTERN.match(text.strip())
     payload_text = match.group(1) if match else text
     try:
         payload = JudgePayload.model_validate(json.loads(payload_text))
     except (json.JSONDecodeError, ValidationError) as error:
-        return EvaluationResult(
-            run_id=run_id,
-            evaluator_type="llm_judge",
-            criterion=criterion,
-            score=None,
-            explanation=f"Judge output parse failed: {error}",
-        )
+        embedded = _embedded_payload(text)
+        if embedded is None:
+            return EvaluationResult(
+                run_id=run_id,
+                evaluator_type="llm_judge",
+                criterion=criterion,
+                score=None,
+                explanation=f"Judge output parse failed: {error}",
+            )
+        payload = embedded
     return EvaluationResult(
         run_id=run_id,
         evaluator_type="llm_judge",
