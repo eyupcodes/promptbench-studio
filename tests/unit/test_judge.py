@@ -1,6 +1,8 @@
 from typing import Any
 from uuid import uuid4
 
+import pytest
+
 from promptbench_studio.evaluation.judge import LLMJudgeEvaluator, parse_judge_output
 
 
@@ -20,6 +22,37 @@ def test_parse_judge_output_does_not_invent_score_on_invalid_json() -> None:
 
     assert result.score is None
     assert "parse" in result.explanation.lower()
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        'Here is my verdict: {"score": 0.8, "explanation": "Accurate"} Thanks!',
+        'Verdict:\n```json\n{"score": 0.8, "explanation": "Accurate"}\n```\nDone.',
+        'Context {"note": 1} then {"score": 0.8, "explanation": "Accurate"}',
+        'Braces { are fine } before {"score": 0.8, "explanation": "Accurate"}',
+    ],
+)
+def test_parse_judge_output_finds_verdict_inside_prose(text: str) -> None:
+    result = parse_judge_output(uuid4(), text, "Accuracy")
+
+    assert result.score == 0.8
+    assert result.explanation == "Accurate"
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        'Verdict: {"score": 2, "explanation": "Out of range"}',
+        'Verdict: {"score": 0.5}',
+        "Verdict: {unterminated",
+    ],
+)
+def test_parse_judge_output_in_prose_still_rejects_invalid_payloads(text: str) -> None:
+    result = parse_judge_output(uuid4(), text, "Accuracy")
+
+    assert result.score is None
+    assert "parse failed" in result.explanation
 
 
 async def test_judge_separates_candidate_from_instructions() -> None:
