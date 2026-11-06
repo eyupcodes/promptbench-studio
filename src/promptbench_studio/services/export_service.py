@@ -59,12 +59,25 @@ def export_markdown(results: Sequence[RunResult]) -> str:
     for result in results:
         output = html.escape(result.output_text)
         fence = "`" * max(4, _longest_backtick_run(output) + 1)
+        metrics = result.metrics
+        details = [
+            f"- Status: {html.escape(result.status.value)}",
+            f"- Latency: {metrics.latency_ms} ms",
+        ]
+        if metrics.total_tokens:
+            details.append(
+                f"- Tokens: {metrics.input_tokens} in / {metrics.output_tokens} out "
+                f"({metrics.total_tokens} total)"
+            )
+        if metrics.estimated_cost_usd is not None:
+            details.append(f"- Estimated cost: ${metrics.estimated_cost_usd}")
+        if result.provider_error:
+            details.append(f"- Error: {' '.join(html.escape(result.provider_error).split())}")
         lines.extend(
             [
                 f"## {html.escape(result.model_key)}",
                 "",
-                f"- Status: {html.escape(result.status.value)}",
-                f"- Latency: {result.metrics.latency_ms} ms",
+                *details,
                 "",
                 f"{fence}text",
                 output,
