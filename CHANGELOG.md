@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The Markdown export lists token counts and estimated cost per run, and shows the provider error of failed runs (HTML-escaped) instead of an empty block (#17).
 
 ### Fixed
+- Required and forbidden phrase rules compare text after Unicode NFKC normalization, so composed and decomposed accents or fullwidth forms no longer score a correct answer as failed or let a forbidden phrase through (#19).
 - LLM judge verdicts wrapped in explanatory text (or a fence inside prose) are parsed instead of being stored as parse failures; replies without a valid payload still produce no score (#15).
 - Regex patterns are validated with the same `regex` engine that evaluates them, so Unicode properties such as `\p{L}` are accepted instead of rejected as invalid (#11).
 

@@ -1,5 +1,6 @@
 """Deterministic text evaluators."""
 
+import unicodedata
 from uuid import UUID
 
 import regex
@@ -33,14 +34,19 @@ def _evaluate_regex(run_id: UUID, output: str, pattern: str) -> EvaluationResult
     return _result(run_id, "regex", pattern, passed)
 
 
+def _fold(text: str) -> str:
+    """NFKC-normalise and case-fold, so equivalent spellings compare equal."""
+    return unicodedata.normalize("NFKC", text).casefold()
+
+
 def evaluate_rules(run_id: UUID, output: str, config: EvaluationConfig) -> list[EvaluationResult]:
-    lowered = output.casefold()
+    folded = _fold(output)
     results = [
-        _result(run_id, "required_phrase", phrase, phrase.casefold() in lowered)
+        _result(run_id, "required_phrase", phrase, _fold(phrase) in folded)
         for phrase in config.required_phrases
     ]
     results.extend(
-        _result(run_id, "forbidden_phrase", phrase, phrase.casefold() not in lowered)
+        _result(run_id, "forbidden_phrase", phrase, _fold(phrase) not in folded)
         for phrase in config.forbidden_phrases
     )
     results.extend(_evaluate_regex(run_id, output, pattern) for pattern in config.regex_patterns)
