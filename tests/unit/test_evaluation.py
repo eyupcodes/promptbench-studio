@@ -83,3 +83,21 @@ def test_deterministic_engine_includes_successful_schema_check() -> None:
 
     assert len(results) == 2
     assert all(result.score == 1 for result in results)
+
+
+def test_phrase_rules_match_equivalent_unicode_spellings() -> None:
+    decomposed = "cafe" + chr(0x0301)  # "e" + combining acute accent
+    fullwidth = "".join(chr(0xFF41 + offset) for offset in range(3))  # fullwidth "abc"
+    config = EvaluationConfig(required_phrases=("caf\u00e9", "ABC"))
+
+    results = evaluate_rules(uuid4(), f"Ein {decomposed} und {fullwidth}", config)
+
+    assert [result.score for result in results] == [1.0, 1.0]
+
+
+def test_forbidden_phrase_is_caught_in_a_different_unicode_spelling() -> None:
+    config = EvaluationConfig(forbidden_phrases=("caf\u00e9",))
+
+    results = evaluate_rules(uuid4(), "Visit the cafe" + chr(0x0301) + " today", config)
+
+    assert [result.score for result in results] == [0.0]
