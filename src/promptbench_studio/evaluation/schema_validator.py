@@ -4,27 +4,58 @@ import json
 from typing import Any
 from uuid import UUID
 
-from jsonschema import ValidationError, validate
+from jsonschema import validators
+from jsonschema.exceptions import ValidationError, best_match
 
 from promptbench_studio.domain.schemas import EvaluationResult
+
+CRITERION = "Output matches JSON Schema"
+MAX_EXPLANATION_CHARS = 300
+
+
+def _json_path(error: ValidationError) -> str:
+    path = "$"
+    for part in error.absolute_path:
+        path += f"[{part}]" if isinstance(part, int) else f".{part}"
+    return path
+
+
+def _explain(error: ValidationError) -> str:
+    """One line with the failing path and reason, without the schema or full output."""
+    text = f"{_json_path(error)}: {' '.join(error.message.split())}"
+    if len(text) > MAX_EXPLANATION_CHARS:
+        # The reason ("is not of type ...") comes last, so elide from the middle.
+        head = MAX_EXPLANATION_CHARS // 2
+        tail = MAX_EXPLANATION_CHARS - head - 3
+        text = f"{text[:head]}...{text[-tail:]}"
+    return text
+
+
+def _failure(run_id: UUID, explanation: str) -> EvaluationResult:
+    return EvaluationResult(
+        run_id=run_id,
+        evaluator_type="json_schema",
+        criterion=CRITERION,
+        score=0,
+        explanation=explanation,
+    )
 
 
 def evaluate_json_schema(run_id: UUID, output: str, schema: dict[str, Any]) -> EvaluationResult:
     try:
         payload = json.loads(output)
-        validate(payload, schema)
-    except (json.JSONDecodeError, ValidationError) as error:
-        return EvaluationResult(
-            run_id=run_id,
-            evaluator_type="json_schema",
-            criterion="Output matches JSON Schema",
-            score=0,
-            explanation=str(error),
+    except json.JSONDecodeError as error:
+        return _failure(
+            run_id, f"Invalid JSON: {error.msg} (line {error.lineno}, column {error.colno})"
         )
+    validator = validators.validator_for(schema)(schema)
+    failure = best_match(validator.iter_errors(payload))
+    if failure is not None:
+        return _failure(run_id, _explain(failure))
     return EvaluationResult(
         run_id=run_id,
         evaluator_type="json_schema",
-        criterion="Output matches JSON Schema",
+        criterion=CRITERION,
         score=1,
         explanation="Passed",
     )

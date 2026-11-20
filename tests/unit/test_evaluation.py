@@ -1,3 +1,4 @@
+import json
 import time
 from uuid import uuid4
 
@@ -101,3 +102,42 @@ def test_forbidden_phrase_is_caught_in_a_different_unicode_spelling() -> None:
     results = evaluate_rules(uuid4(), "Visit the cafe" + chr(0x0301) + " today", config)
 
     assert [result.score for result in results] == [0.0]
+
+
+def test_json_schema_explanation_names_the_path_and_omits_schema_and_output() -> None:
+    long_text = "x" * 5_000
+    result = evaluate_json_schema(
+        uuid4(),
+        json.dumps({"items": [{"id": 1}, {"id": long_text}]}),
+        {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {"properties": {"id": {"type": "integer"}}},
+                }
+            },
+            "x-marker": "SCHEMA-DUMP-MARKER",
+        },
+    )
+
+    assert result.score == 0
+    assert result.explanation.startswith("$.items[1].id: ")
+    assert "is not of type 'integer'" in result.explanation
+    assert "SCHEMA-DUMP-MARKER" not in result.explanation
+    assert len(result.explanation) <= 300
+    assert "..." in result.explanation
+
+
+def test_json_schema_explanation_for_a_root_level_error() -> None:
+    result = evaluate_json_schema(uuid4(), "{}", {"type": "object", "required": ["answer"]})
+
+    assert result.explanation == "$: 'answer' is a required property"
+
+
+def test_json_schema_explanation_for_invalid_json() -> None:
+    result = evaluate_json_schema(uuid4(), '{"answer": ', {"type": "object"})
+
+    assert result.score == 0
+    assert result.explanation.startswith("Invalid JSON: ")
+    assert "line 1, column" in result.explanation
