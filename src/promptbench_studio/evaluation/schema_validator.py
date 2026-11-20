@@ -24,7 +24,10 @@ def _explain(error: ValidationError) -> str:
     """One line with the failing path and reason, without the schema or full output."""
     text = f"{_json_path(error)}: {' '.join(error.message.split())}"
     if len(text) > MAX_EXPLANATION_CHARS:
-        text = text[: MAX_EXPLANATION_CHARS - 3] + "..."
+        # The reason ("is not of type ...") comes last, so elide from the middle.
+        head = MAX_EXPLANATION_CHARS // 2
+        tail = MAX_EXPLANATION_CHARS - head - 3
+        text = f"{text[:head]}...{text[-tail:]}"
     return text
 
 
