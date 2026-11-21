@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Dependabot proposes monthly, grouped updates for pip and GitHub Actions dependencies and the Docker base image, and CI fails when coverage drops below 90% instead of 80% (#23).
+
 ### Added
 - The Markdown export lists token counts and estimated cost per run, and shows the provider error of failed runs (HTML-escaped) instead of an empty block (#17).
 
